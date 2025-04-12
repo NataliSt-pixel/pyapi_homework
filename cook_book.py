@@ -1,0 +1,71 @@
+ef parse_recipe_file(file_path):
+    cook_book = {}
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        while True:
+            dish_name = file.readline().strip()
+            if not dish_name: 
+                break
+
+            try:
+                ingredients_count = int(file.readline().strip())
+            except ValueError:
+                raise ValueError(f"Ошибка в формате количества ингредиентов для блюда '{dish_name}'")
+
+            ingredients = []
+            for _ in range(ingredients_count):
+                ingredient_line = file.readline().strip()
+                if not ingredient_line:
+                    raise ValueError(f"Не хватает ингредиентов для блюда '{dish_name}'")
+
+                parts = [part.strip() for part in ingredient_line.split('|')]
+                if len(parts) != 3:
+                    raise ValueError(f"Неверный формат ингредиента в блюде '{dish_name}': {ingredient_line}")
+                
+                try:
+                    ingredient = {
+                        'ingredient_name': parts[0],
+                        'quantity': int(parts[1]),
+                        'measure': parts[2]
+                    }
+                except ValueError:
+                    raise ValueError(f"Неверное количество ингредиента в блюде '{dish_name}': {parts[1]}")
+
+                ingredients.append(ingredient)
+
+            cook_book[dish_name] = ingredients
+
+            file.readline()
+
+    return cook_book
+
+
+def print_cook_book(cook_book):
+    
+    for dish, ingredients in cook_book.items():
+        print(f"\n{dish}:")
+        for ingr in ingredients:
+            print(f"  {ingr['ingredient_name']}: {ingr['quantity']} {ingr['measure']}")
+
+
+def main():
+    try:
+        cook_book = parse_recipe_file('recipes.txt')
+
+        print("Кулинарная книга успешно загружена!")
+        print("\nСодержимое cook_book:")
+        print(cook_book)
+
+        print("\nКрасивый вывод:")
+        print_cook_book(cook_book)
+
+    except FileNotFoundError:
+        print("Ошибка: файл 'recipes.txt' не найден!")
+    except ValueError as e:
+        print(f"Ошибка в формате файла: {e}")
+    except Exception as e:
+        print(f"Неожиданная ошибка: {e}")
+
+
+if __name__ == '__main__':
+    main()
