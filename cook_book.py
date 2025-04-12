@@ -1,70 +1,72 @@
-def parse_recipe_file(file_path):
+def read_cook_book(filename):
     cook_book = {}
-
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(filename, 'r', encoding='utf-8') as file:
         while True:
+
             dish_name = file.readline().strip()
-            if not dish_name: 
-                break
-
-            try:
-                ingredients_count = int(file.readline().strip())
-            except ValueError:
-                raise ValueError(f"Ошибка в формате количества ингредиентов для блюда '{dish_name}'")
-
+            if not dish_name:
+                break 
+            
+           
+            ingredient_count = int(file.readline().strip())
+            
+           
             ingredients = []
-            for _ in range(ingredients_count):
+            for _ in range(ingredient_count):
                 ingredient_line = file.readline().strip()
-                if not ingredient_line:
-                    raise ValueError(f"Не хватает ингредиентов для блюда '{dish_name}'")
-
-                parts = [part.strip() for part in ingredient_line.split('|')]
-                if len(parts) != 3:
-                    raise ValueError(f"Неверный формат ингредиента в блюде '{dish_name}': {ingredient_line}")
-                
-                try:
-                    ingredient = {
-                        'ingredient_name': parts[0],
-                        'quantity': int(parts[1]),
-                        'measure': parts[2]
-                    }
-                except ValueError:
-                    raise ValueError(f"Неверное количество ингредиента в блюде '{dish_name}': {parts[1]}")
-
-                ingredients.append(ingredient)
-
+                name, quantity, measure = [part.strip() for part in ingredient_line.split('|')]
+                ingredients.append({
+                    'ingredient_name': name,
+                    'quantity': int(quantity),
+                    'measure': measure
+                })
+            
             cook_book[dish_name] = ingredients
-
+            
+           
             file.readline()
-
+    
     return cook_book
 
 
-def print_cook_book(cook_book):
+def get_shop_list_by_dishes(dishes, person_count, cook_book):
     
-    for dish, ingredients in cook_book.items():
-        print(f"\n{dish}:")
-        for ingr in ingredients:
-            print(f"  {ingr['ingredient_name']}: {ingr['quantity']} {ingr['measure']}")
+    shop_list = {}
+    
+    for dish in dishes:
+        if dish not in cook_book:
+            continue  
+        
+        for ingredient in cook_book[dish]:
+            name = ingredient['ingredient_name']
+            measure = ingredient['measure']
+            quantity = ingredient['quantity'] * person_count
+            
+           
+            if name in shop_list:
+                shop_list[name]['quantity'] += quantity
+            else:
+                shop_list[name] = {'measure': measure, 'quantity': quantity}
+    
+    return shop_list
 
 
 def main():
-    try:
-        cook_book = parse_recipe_file('recipes.txt')
-
-        print("Кулинарная книга успешно загружена!")
-        print("\nСодержимое cook_book:")
-        print(cook_book)
-
-        print("\nКрасивый вывод:")
-        print_cook_book(cook_book)
-
-    except FileNotFoundError:
-        print("Ошибка: файл 'recipes.txt' не найден!")
-    except ValueError as e:
-        print(f"Ошибка в формате файла: {e}")
-    except Exception as e:
-        print(f"Неожиданная ошибка: {e}")
+    cook_book = read_cook_book('recipes.txt')
+    
+    # Задача №1
+    print("Cook Book:")
+    for dish, ingredients in cook_book.items():
+        print(f"\n{dish}:")
+        for ing in ingredients:
+            print(f"  - {ing['ingredient_name']}: {ing['quantity']} {ing['measure']}")
+    
+    # Задача №2
+    shop_list = get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2, cook_book)
+    
+    print("\n Shopping List:")
+    for item, details in shop_list.items():
+        print(f"  - {item}: {details['quantity']} {details['measure']}")
 
 
 if __name__ == '__main__':
