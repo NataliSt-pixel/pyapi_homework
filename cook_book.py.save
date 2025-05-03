@@ -1,4 +1,4 @@
-ef parse_recipe_file(file_path):
+def parse_recipe_file(file_path):
     cook_book = {}
 
     with open(file_path, 'r', encoding='utf-8') as file:
